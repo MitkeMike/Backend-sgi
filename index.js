@@ -1,9 +1,13 @@
 const express = require('express');
-const usuariosRoutes = require('./routes/usuarioRoutes');
+const cors = require('cors'); // Importa cors
+const usuarioRoutes = require('./routes/usuarioRoutes'); // Asegúrate de que el nombre del archivo sea correcto
 const sequelize = require('./database');
 
 const app = express();
 const port = 3000;
+
+// Usa cors para permitir solicitudes de cualquier origen
+app.use(cors());
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
@@ -17,6 +21,6 @@ sequelize.sync({ force: false }).then(() => {
     console.error('Database sync failed:', error);
 });
 
-app.use('/usuarios', usuariosRoutes);
+app.use('/usuarios', usuarioRoutes);
 
 module.exports = app;
