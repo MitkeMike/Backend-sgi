@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors'); // Importa cors
 const usuarioRoutes = require('./routes/usuarioRoutes'); // Asegúrate de que el nombre del archivo sea correcto
+const incidenciaRoutes = require('./routes/incidencia_routes'); // Asegúrate de que el nombre del archivo sea correcto
+const diagnosticosRoutes = require('./routes/diagnosticos_routes'); // Asegúrate de que el nombre del archivo sea correcto
 const sequelize = require('./database');
 
 const app = express();
@@ -22,5 +24,7 @@ sequelize.sync({ force: false }).then(() => {
 });
 
 app.use('/usuarios', usuarioRoutes);
+app.use('/incidencias', incidenciaRoutes);
+app.use('/diagnosticos', diagnosticosRoutes);
 
 module.exports = app;

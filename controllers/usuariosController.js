@@ -2,7 +2,7 @@
 
 const Usuario = require('../models/usuarios');
 
-exports.getUsuarios = async (req, res) => {
+exports.obtener_usuarios = async (req, res) => {
     try {
         const usuarios = await Usuario.findAll();
         res.json(usuarios);
@@ -12,7 +12,7 @@ exports.getUsuarios = async (req, res) => {
     }
 };
 
-exports.createUsuario = async (req, res) => {
+exports.crear_usuario = async (req, res) => {
     try {
         const { ct_correo } = req.body;
         // Verificar si el correo electrónico ya está registrado
@@ -32,7 +32,7 @@ exports.createUsuario = async (req, res) => {
 };
 
 
-exports.updateUsuario = async (req, res) => {
+exports.actualizar_usuario = async (req, res) => {
     try {
         const usuario = await Usuario.findByPk(req.params.id);
         if (!usuario) {
@@ -49,7 +49,7 @@ exports.updateUsuario = async (req, res) => {
     }
 };
 
-exports.deleteUsuario = async (req, res) => {
+exports.eliminar_Usuario = async (req, res) => {
     try {
         const usuario = await Usuario.findByPk(req.params.id);
         if (!usuario) {
@@ -64,7 +64,7 @@ exports.deleteUsuario = async (req, res) => {
     }
 };
 
-exports.loginUsuario = async (req, res) => {
+exports.login_usuario = async (req, res) => {
     try {
         const { ct_correo, ct_password } = req.body;
 
