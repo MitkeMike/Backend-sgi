@@ -1,6 +1,31 @@
-// controllers/usuariosController.js
-
 const Usuario = require('../models/usuarios');
+const jwt = require('jsonwebtoken');
+
+exports.obtener_usuario = async (req, res) => {
+    try {
+        // Extraer el token 
+        const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ error: 'Token de autorización no proporcionado' });
+        }
+
+        // Verificar y decodificar el token para obtener el ID de usuario
+        const decodedToken = jwt.verify(token, 'tu_clave_secreta');
+        const userId = decodedToken.userId;
+
+        // Buscar el usuario en la base de datos
+        const usuario = await Usuario.findByPk(userId);
+        if (!usuario) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        // Si se encuentra el usuario, enviarlo en la respuesta
+        res.json(usuario);
+    } catch (error) {
+        console.error('Error al obtener usuario:', error);
+        res.status(500).send('Error interno del servidor');
+    }
+}
 
 exports.obtener_usuarios = async (req, res) => {
     try {
@@ -64,26 +89,3 @@ exports.eliminar_Usuario = async (req, res) => {
     }
 };
 
-exports.login_usuario = async (req, res) => {
-    try {
-        const { ct_correo, ct_password } = req.body;
-
-        // Buscar un usuario por correo electrónico
-        const usuario = await Usuario.findOne({ where: { ct_correo } });
-
-        if (!usuario) {
-            return res.status(401).json({ error: 'Credenciales incorrectas' });
-        }
-
-        // Verificar la contraseña
-        if (ct_password !== usuario.ct_password) {
-            return res.status(401).json({ error: 'Credenciales incorrectas' });
-        }
-
-        // Si las credenciales son válidas, enviar una respuesta de éxito
-        res.json({ message: 'Inicio de sesión exitoso' });
-    } catch (error) {
-        console.error('Error en el inicio de sesión:', error);
-        res.status(500).send('Error interno del servidor');
-    }
-};

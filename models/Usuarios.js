@@ -40,8 +40,17 @@ const Usuario = sequelize.define('Usuario', {
   ct_password: {
     type: DataTypes.STRING,
     allowNull: false
-  }
-}, {
+  },
+  ct_token: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  cb_confirmado: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false
+  },
+}, 
+ {
   tableName: 't_usuarios',
   timestamps: false
 });
