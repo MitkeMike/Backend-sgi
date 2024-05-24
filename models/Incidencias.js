@@ -6,6 +6,10 @@ const Incidencias = sequelize.define('Incidencias',{
         type: DataTypes.STRING,
         primaryKey: true
     },
+    ct_titulo_incidencia: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
     cn_user_id: {
         type: DataTypes.INTEGER,
         references: {
@@ -90,7 +94,37 @@ const Incidencias = sequelize.define('Incidencias',{
     }
 }, {
     tableName: 't_incidencias',
-    timestamps: false
+    timestamps: false,
+    hooks: {
+        beforeCreate: async (incidencia) => {
+            const year = new Date().getFullYear();
+            const t = await sequelize.transaction();
+
+            try {
+                // Obtener la última incidencia creada en el año actual
+                const lastIncidencia = await Incidencias.findOne({
+                    where: sequelize.where(sequelize.fn('YEAR', sequelize.col('cf_fecha_hora_registro')), year),
+                    order: [['cf_fecha_hora_registro', 'DESC']],
+                    lock: true, // Bloquear la fila para evitar concurrencia
+                    transaction: t
+                });
+
+                let consecutiveNumber = 1;
+                if (lastIncidencia) {
+                    const lastId = lastIncidencia.ct_cod_incidencia;
+                    const lastConsecutive = parseInt(lastId.split('-')[1]);
+                    consecutiveNumber = lastConsecutive + 1;
+                }
+
+                incidencia.ct_cod_incidencia = `${year}-${String(consecutiveNumber).padStart(7, '0')}`;
+
+                await t.commit();
+            } catch (error) {
+                await t.rollback();
+                throw error;
+            }
+        }
+    }
 });
 
 module.exports = Incidencias;
