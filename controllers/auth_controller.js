@@ -25,7 +25,7 @@ exports.login_usuario = async (req, res) => {
         usuario.ct_token = token;
         await usuario.save();
         // Enviar el token en la respuesta
-        res.json({ token });
+        res.json({ token, message: 'Inicio de sesión exitoso'});
     } catch (error) {
         console.error('Error en el inicio de sesión:', error);
         res.status(500).send('Error interno del servidor');
