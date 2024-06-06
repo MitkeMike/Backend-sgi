@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const  sequelize  = require('../database');
+const Imagenes = require('./Imagenes');
 
 const Incidencias = sequelize.define('Incidencias',{
     ct_cod_incidencia: {
@@ -126,5 +127,7 @@ const Incidencias = sequelize.define('Incidencias',{
         }
     }
 });
+
+Incidencias.belongsTo(Imagenes, { foreignKey: 'cn_id_img_incidencia', as: 'imagen' });
 
 module.exports = Incidencias;
