@@ -1,0 +1,16 @@
+const express = require('express');
+const router = express.Router();
+const adminController = require('../controllers/admin_controler');
+const auth = require('../middleware/auth');
+
+router.get('/afectaciones', auth, adminController.obtener_todas_Afectaciones);
+router.get('/categorias', auth, adminController.obtener_todas_categorias);
+router.get('/departamentos', auth, adminController.obtener_todos_departamentos);
+router.get('/estados', auth, adminController.obtener_todos_estados);
+router.get('/pantallas', auth, adminController.obtener_todas_pantallas);
+router.get('/riesgos', auth, adminController.obtener_todos_riesgos);
+router.get('/sistema', auth, adminController.obtener_todos_sistemas);
+router.get('/roles', auth, adminController.obtener_todos_roles);
+router.get('/prioridades', auth, adminController.obtener_todas_prioridades);
+
+module.exports = router;

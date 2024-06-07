@@ -5,6 +5,7 @@ const auth_routes = require('./routes/auth_routes');
 const usuarioRoutes = require('./routes/usuarioRoutes'); 
 const incidenciaRoutes = require('./routes/incidencia_routes'); 
 const diagnosticosRoutes = require('./routes/diagnosticos_routes'); 
+const admin_routes = require('./routes/admin_routes');
 const sequelize = require('./database');
 
 const app = express();
@@ -27,6 +28,7 @@ sequelize.sync({ force: false }).then(() => {
     console.error('Database sync failed:', error);
 });
 app.use('/auth', auth_routes);
+app.use('/admin', admin_routes);
 app.use('/usuarios', usuarioRoutes);
 app.use('/incidencias', incidenciaRoutes);
 app.use('/diagnosticos', diagnosticosRoutes);
