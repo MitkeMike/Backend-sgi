@@ -19,7 +19,7 @@ exports.login_usuario = async (req, res) => {
         }
 
         // Generar el token JWT
-        const token = jwt.sign({ userId: usuario.cn_user_id }, 'tu_clave_secreta', { expiresIn: '1h' });
+        const token = jwt.sign({ userId: usuario.cn_user_id },  process.env.JWT_SECRET, { expiresIn: '1h' });
 
         console.log('El token es ' + token);
         usuario.ct_token = token;

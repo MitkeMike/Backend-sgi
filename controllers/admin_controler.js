@@ -8,6 +8,7 @@ const Roles = require('../models/Roles');
 const Sistema = require('../models/Sistema');
 const Prioridades = require('../models/Prioridades');
 const Usuarios = require('../models/Usuarios');
+const Asignacion_incidencia = require('../models/Asignacion_incidencia');
 
 
 exports.obtener_todas_Afectaciones = async (req, res) => {
@@ -136,6 +137,23 @@ exports.obtener_todos_usuarios = async (req, res) => {
         res.json(usuarios);
     } catch (error) {
         console.error('Error al obtener usuarios:', error);
+        res.status(500).send('Error interno del servidor');
+    }
+}
+
+exports.asignar_incidencia = async (req, res) => {
+    try {
+        const ct_cod_incidencia = req.params.ct_cod_incidencia;
+        const { cn_user_id } = req.body;
+
+        if (!cn_user_id) {
+            return res.status(400).send('cn_user_id es requerido');
+        }
+        
+        const asignacion = await Asignacion_incidencia.create({ ct_cod_incidencia, cn_user_id });
+        res.json(asignacion);
+    } catch (error) {
+        console.error('Error al asignar incidencia:', error);
         res.status(500).send('Error interno del servidor');
     }
 }

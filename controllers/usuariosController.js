@@ -1,4 +1,5 @@
 const Usuario = require('../models/usuarios');
+require('dotenv').config();
 const jwt = require('jsonwebtoken');
 
 exports.obtener_usuario = async (req, res) => {
@@ -10,7 +11,7 @@ exports.obtener_usuario = async (req, res) => {
         }
 
         // Verificar y decodificar el token para obtener el ID de usuario
-        const decodedToken = jwt.verify(token, 'tu_clave_secreta');
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decodedToken.userId;
 
         // Buscar el usuario en la base de datos

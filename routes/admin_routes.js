@@ -12,5 +12,6 @@ router.get('/riesgos', auth, adminController.obtener_todos_riesgos);
 router.get('/sistema', auth, adminController.obtener_todos_sistemas);
 router.get('/roles', auth, adminController.obtener_todos_roles);
 router.get('/prioridades', auth, adminController.obtener_todas_prioridades);
+router.post('/asignar-incidencia/:ct_cod_incidencia',auth,adminController.asignar_incidencia);
 
 module.exports = router;

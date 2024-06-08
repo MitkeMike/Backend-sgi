@@ -15,16 +15,12 @@ const Asignacion_incidencia = sequelize.define('Asignacion_incidencia', {
         },
         allowNull: false
     },
-    cn_id_usuario: {
+    cn_user_id: {
         type: DataTypes.INTEGER,
         references: {
             model: 't_usuarios',
-            key: 'cn_id_usuario'
+            key: 'cn_user_id'
         },
-        allowNull: false
-    },
-    cn_cantidad_tecnicos: {
-        type: DataTypes.INTEGER,
         allowNull: false
     },
     }, {

@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors'); // Importa cors
-
+require('dotenv').config();
 const auth_routes = require('./routes/auth_routes'); 
 const usuarioRoutes = require('./routes/usuarioRoutes'); 
 const incidenciaRoutes = require('./routes/incidencia_routes'); 
@@ -9,7 +9,7 @@ const admin_routes = require('./routes/admin_routes');
 const sequelize = require('./database');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT;
 
 // Usa cors para permitir solicitudes de cualquier origen
 app.use(cors({

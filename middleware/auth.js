@@ -1,5 +1,5 @@
 // middleware/auth.js
-
+require('dotenv').config();
 const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
@@ -10,7 +10,7 @@ module.exports = (req, res, next) => {
     }
 
     // Verificar el token JWT
-    jwt.verify(token, 'tu_clave_secreta', (err, decodedToken) => {
+    jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
         if (err) {
             return res.status(401).json({ error: 'Token de autorización inválido' });
         }
