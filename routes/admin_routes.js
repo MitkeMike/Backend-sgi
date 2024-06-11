@@ -14,4 +14,6 @@ router.get('/roles', auth, adminController.obtener_todos_roles);
 router.get('/prioridades', auth, adminController.obtener_todas_prioridades);
 router.post('/asignar-incidencia/:ct_cod_incidencia',auth,adminController.asignar_incidencia);
 
+router.get('/tecnicos', auth, adminController.obtener_todos_tecnicos);
+
 module.exports = router;

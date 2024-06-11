@@ -4,11 +4,10 @@ const Departamento = require('../models/Departamento');
 const Estados = require('../models/Estados');
 const Pantallas = require('../models/Pantallas');
 const Riesgos = require('../models/Riesgos');
-const Roles = require('../models/Roles');
 const Sistema = require('../models/Sistema');
 const Prioridades = require('../models/Prioridades');
-const Usuarios = require('../models/Usuarios');
 const Asignacion_incidencia = require('../models/Asignacion_incidencia');
+const { Usuarios, Roles } = require('../models');
 
 
 exports.obtener_todas_Afectaciones = async (req, res) => {
@@ -128,18 +127,25 @@ exports.obtener_todas_prioridades = async (req, res) => {
     }
 }
 
-exports.obtener_todos_usuarios = async (req, res) => {
+exports.obtener_todos_tecnicos = async (req, res) => {
     try {
-        const usuarios = await Usuarios.findAll();
-        if (usuarios.length === 0) {
-            return res.status(404).json({ message: 'No se encontraron usuarios' });
+      const tecnicos = await Usuarios.findAll({
+        include: {
+          model: Roles,
+          where: { ct_descripcion: 'Técnico' },
+          through: { attributes: [] } // Esto excluye los atributos de la tabla intermedia
         }
-        res.json(usuarios);
+      });
+  
+      if (tecnicos.length === 0) {
+        return res.status(404).json({ message: 'No se encontraron técnicos' });
+      }
+      res.json(tecnicos);
     } catch (error) {
-        console.error('Error al obtener usuarios:', error);
-        res.status(500).send('Error interno del servidor');
+      console.error('Error al obtener técnicos:', error);
+      res.status(500).send('Error interno del servidor');
     }
-}
+  };
 
 exports.asignar_incidencia = async (req, res) => {
     try {
