@@ -1,5 +1,6 @@
 const Incidencias = require('../models/Incidencias');
 const Imagenes = require('../models/Imagenes');
+const Asignacion_incidencias = require('../models/Asignacion_incidencia');
 const multer = require('multer');
 const sequelize = require('../database');
 
@@ -80,3 +81,49 @@ exports.crear_Incidencia = async (req, res) => {
         }
     });
 };
+
+exports.actualizar_Incidencia = async (req, res) => {
+    const { ct_cod_incidencia, cn_user_id, afectacion, categoria, estado, riesgo, prioridad } = req.body;
+
+    try {
+        const t = await sequelize.transaction();
+
+        try {
+            // Actualizar los campos en la tabla de incidencias
+            const [affectedRows] = await Incidencias.update({
+                cn_id_afectacion: afectacion,
+                cn_id_categoria: categoria,
+                cn_id_estado: estado,
+                cn_id_riesgo: riesgo,
+                cn_id_prioridad: prioridad
+            }, {
+                where: { ct_cod_incidencia: ct_cod_incidencia },
+                transaction: t
+            });
+
+            if (affectedRows === 0) {
+                throw new Error('No se encontró la incidencia para actualizar');
+            }
+
+            // Inserción en la tabla de asignación de incidencias
+            await Asignacion_incidencias.create({
+                ct_cod_incidencia: ct_cod_incidencia,
+                cn_user_id: cn_user_id
+            }, { transaction: t });
+
+            // Confirmamos la transacción
+            await t.commit();
+
+            res.json({ message: 'Incidencia actualizada e inserción realizada con éxito' });
+        } catch (error) {
+            // Se revierte la transacción
+            await t.rollback();
+            console.error('Error al actualizar e insertar:', error);
+            res.status(500).json({ message: 'Error interno del servidor', error: error.message });
+        }
+    } catch (error) {
+        console.error('Error al actualizar e insertar:', error);
+        res.status(500).json({ message: 'Error interno del servidor', error: error.message });
+    }
+};
+
