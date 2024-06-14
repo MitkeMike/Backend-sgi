@@ -1,6 +1,8 @@
 const Usuario = require('../models/Usuarios');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
+const sequelize = require('../database');
+const { Op } = require('sequelize');
 
 exports.obtener_usuario = async (req, res) => {
     try {
@@ -31,25 +33,26 @@ exports.obtener_usuario = async (req, res) => {
 exports.buscar_usuario = async (req, res) => {
     const { ct_nombre, ct_cedula, ct_correo } = req.body;
     try {
-        const conditions = {};
+        const conditions = [];
         if (ct_nombre) {
-            conditions.ct_nombre = ct_nombre;
+            conditions.push({ ct_nombre: { [Op.like]: `%${ct_nombre}%` } });
         }
         if (ct_cedula) {
-            conditions.ct_cedula = ct_cedula;
+            conditions.push({ ct_cedula: { [Op.like]: `%${ct_cedula}%` } });
         }
         if (ct_correo) {
-            conditions.ct_correo = ct_correo;
+            conditions.push({ ct_correo: { [Op.like]: `%${ct_correo}%` } });
         }
-        if(Object.keys(conditions).length === 0){
-            return res.status(400).json({ error: 'Debe proporcionar al menos un campo para buscar' });
+        if (conditions.length === 0) {
+            const usuarios = await Usuario.findAll();
+            return res.json(usuarios);
+        } else {
+            const usuario = await Usuario.findAll({ where: { [Op.or]: conditions } });
+            if (!usuario.length) {
+                return res.status(404).json({ error: 'Usuario no encontrado' });
+            }
+            res.json(usuario);
         }
-        const usuario = await Usuario.findOne({ where: conditions });
-        if (!usuario) {
-            return res.status(404).json({ error: 'Usuario no encontrado' });
-        }
-        res.json(usuario);
-
     } catch (error) {
         console.error('Error al buscar usuario:', error);
         res.status(500).send('Error interno del servidor');

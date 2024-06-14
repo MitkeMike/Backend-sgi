@@ -132,16 +132,17 @@ exports.buscar_incidencia = async (req, res) => {
     const { ct_cod_incidencia, ct_titulo_incidencia } = req.body;
 
     try {
-
         const whereCondition = {};
         if (ct_cod_incidencia) {
-            whereCondition.ct_cod_incidencia = ct_cod_incidencia;
+            whereCondition.ct_cod_incidencia = { [Op.like]: `%${ct_cod_incidencia}%` };
         }
         if (ct_titulo_incidencia) {
-            whereCondition.ct_titulo_incidencia = ct_titulo_incidencia;
+            whereCondition.ct_titulo_incidencia = { [Op.like]: `%${ct_titulo_incidencia}%` };
         }
-        const incidencia = await Incidencias.findOne({
-            where: { [Op.or]: whereCondition },
+        const incidencias = await Incidencias.findAll({
+            where: {
+                [Op.or]: whereCondition
+            },
             include: [
                 {
                     model: Imagenes,
@@ -151,13 +152,13 @@ exports.buscar_incidencia = async (req, res) => {
             ]
         });
 
-        if (!incidencia) {
-            return res.status(404).json({ message: 'No se encontró la incidencia' });
+        if (!incidencias || incidencias.length === 0) {
+            return res.status(404).json({ message: 'No se encontraron incidencias' });
         }
 
-        res.json(incidencia);
+        res.json(incidencias);
     } catch (error) {
-        console.error('Error al buscar incidencia:', error);
+        console.error('Error al buscar incidencias:', error);
         res.status(500).send('Error interno del servidor');
     }
 }
