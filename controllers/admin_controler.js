@@ -9,6 +9,7 @@ const Prioridades = require('../models/Prioridades');
 const Asignacion_incidencia = require('../models/Asignacion_incidencia');
 const { Usuarios, Roles } = require('../models');
 const Roles_Usuario = require('../models/Roles_Usuario');
+const { Op } = require('sequelize');
 
 
 exports.obtener_todas_Afectaciones = async (req, res) => {
@@ -167,26 +168,42 @@ exports.asignar_incidencia = async (req, res) => {
 
 exports.asignar_roles_a_usuario = async (req, res) => {
     const { cn_id_usuario, roles } = req.body;
-
+    console.log('Datos recibidos:', req.body);
     if(!cn_id_usuario || !roles || !Array.isArray(roles) || roles.length === 0){
         return res.status(400).send({ message: 'Usuario o roles no proporcionados o formato incorrecto.' });
     }
 
     try {
-        const rolesToInsert = roles.map(role => ({
-            cn_id_usuario,
-            cn_id_rol: role
-        }));
+        // Obtiene los roles existentes para el usuario
+        const existingRoles = await Roles_Usuario.findAll({
+            where: {
+                cn_id_usuario,
+                cn_id_rol: {
+                    [Op.in]: roles
+                }
+            }
+        });
 
-        await Roles_Usuario.bulkCreate(rolesToInsert);
+        // Filtra los roles que ya existen
+        const existingRoleIds = existingRoles.map(role => role.cn_id_rol);
+        const rolesToInsert = roles
+            .filter(role => !existingRoleIds.includes(role))
+            .map(role => ({
+                cn_id_usuario,
+                cn_id_rol: role
+            }));
+
+        if (rolesToInsert.length > 0) {
+            await Roles_Usuario.bulkCreate(rolesToInsert);
+        }
 
         res.status(200).json({message: 'Roles asignados correctamente.'});
 
     } catch (error) {
         console.error('Error al asignar roles al usuario:', error);
-        res.status(500).json({ message: 'Error interno del servidor. '});
+        res.status(500).json({ message: 'Error interno del servidor.' });
     }
-}
+};
 
 exports.eliminar_roles_de_usuario = async (req, res) => {
     const { cn_id_usuario, cn_id_roles } = req.body;
