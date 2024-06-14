@@ -47,7 +47,7 @@ const Usuario = sequelize.define('Usuario', {
   },
   cb_confirmado: {
     type: DataTypes.BOOLEAN,
-    allowNull: false
+    allowNull: true
   },
 }, 
  {
