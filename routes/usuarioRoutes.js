@@ -10,5 +10,6 @@ router.get('/', auth, usuariosController.obtener_usuarios);
 router.post('/', auth, usuariosController.crear_usuario);
 router.put('/:id', auth, usuariosController.actualizar_usuario);
 router.delete('/:id', auth, usuariosController.eliminar_Usuario);
+router.post('/Buscar-Usuario', auth, usuariosController.buscar_usuario);
 
 module.exports = router;

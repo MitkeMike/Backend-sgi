@@ -3,6 +3,7 @@ const Imagenes = require('../models/Imagenes');
 const Asignacion_incidencias = require('../models/Asignacion_incidencia');
 const multer = require('multer');
 const sequelize = require('../database');
+const { Op } = require('sequelize');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage }).single('img');
@@ -127,3 +128,36 @@ exports.actualizar_Incidencia = async (req, res) => {
     }
 };
 
+exports.buscar_incidencia = async (req, res) => {
+    const { ct_cod_incidencia, ct_titulo_incidencia } = req.body;
+
+    try {
+
+        const whereCondition = {};
+        if (ct_cod_incidencia) {
+            whereCondition.ct_cod_incidencia = ct_cod_incidencia;
+        }
+        if (ct_titulo_incidencia) {
+            whereCondition.ct_titulo_incidencia = ct_titulo_incidencia;
+        }
+        const incidencia = await Incidencias.findOne({
+            where: { [Op.or]: whereCondition },
+            include: [
+                {
+                    model: Imagenes,
+                    as: 'imagen',
+                    attributes: ['cn_id_img', 'img']
+                }
+            ]
+        });
+
+        if (!incidencia) {
+            return res.status(404).json({ message: 'No se encontró la incidencia' });
+        }
+
+        res.json(incidencia);
+    } catch (error) {
+        console.error('Error al buscar incidencia:', error);
+        res.status(500).send('Error interno del servidor');
+    }
+}
