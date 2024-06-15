@@ -230,3 +230,32 @@ exports.eliminar_roles_de_usuario = async (req, res) => {
         res.status(500).json({ message: 'Error interno del servidor.' });
     }
 };
+
+exports.roles_por_usuario = async (req, res) => {
+    const cn_id_usuario = req.params.cn_id_usuario;
+    console.log(cn_id_usuario);
+    if (!cn_id_usuario) {
+        return res.status(400).json({ message: 'Usuario no proporcionado.' });
+    }
+
+    try {
+        const usuario = await Usuarios.findOne({
+            where: { cn_user_id: cn_id_usuario },
+            include: [{
+                model: Roles,
+                as: 'roles',
+                attributes: ['cn_id_rol', 'ct_descripcion']
+            }]
+        });
+
+        if (!usuario) {
+            return res.status(404).json({ message: 'No se encontraron roles para este usuario.' });
+        }
+
+        res.json(usuario.roles);
+    } catch (error) {
+        console.error('Error al obtener roles por usuario:', error);
+        res.status(500).json({ message: 'Error interno del servidor.' });
+    }
+}
+
