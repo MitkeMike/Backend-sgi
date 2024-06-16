@@ -131,23 +131,24 @@ exports.obtener_todas_prioridades = async (req, res) => {
 
 exports.obtener_todos_tecnicos = async (req, res) => {
     try {
-      const tecnicos = await Usuarios.findAll({
-        include: {
-          model: Roles,
-          where: { ct_descripcion: 'Técnico' },
-          through: { attributes: [] } // Esto excluye los atributos de la tabla intermedia
+        const tecnicos = await Usuarios.findAll({
+            include: {
+                model: Roles,
+                as: 'roles',
+                where: { ct_descripcion: 'Técnico' },
+                through: { attributes: [] } 
+            }
+        });
+
+        if (tecnicos.length === 0) {
+            return res.status(404).json({ message: 'No se encontraron técnicos' });
         }
-      });
-  
-      if (tecnicos.length === 0) {
-        return res.status(404).json({ message: 'No se encontraron técnicos' });
-      }
-      res.json(tecnicos);
+        res.json(tecnicos);
     } catch (error) {
-      console.error('Error al obtener técnicos:', error);
-      res.status(500).send('Error interno del servidor');
+        console.error('Error al obtener técnicos:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
     }
-  };
+};
 
 exports.asignar_incidencia = async (req, res) => {
     try {
