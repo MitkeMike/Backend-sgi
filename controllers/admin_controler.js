@@ -151,21 +151,63 @@ exports.obtener_todos_tecnicos = async (req, res) => {
 };
 
 exports.asignar_incidencia = async (req, res) => {
+    const transaction = await sequelize.transaction();
     try {
         const ct_cod_incidencia = req.params.ct_cod_incidencia;
         const { cn_user_id } = req.body;
 
         if (!cn_user_id) {
+            console.log('cn_user_id es requerido');
             return res.status(400).send('cn_user_id es requerido');
         }
-        
-        const asignacion = await Asignacion_incidencia.create({ ct_cod_incidencia, cn_user_id });
+
+        // Obtener la incidencia
+        const incidencia = await Incidencias.findOne({ where: { ct_cod_incidencia } });
+
+        if (!incidencia) {
+            console.log('Incidencia no encontrada:', ct_cod_incidencia);
+            return res.status(404).send('Incidencia no encontrada');
+        }
+
+        // Verificar y actualizar el estado de la incidencia
+        console.log('Estado actual de la incidencia:', incidencia.cn_id_estado); // Log del estado actual
+        if (incidencia.cn_id_estado === 1) { // 1 significa "registrado"
+            incidencia.cn_id_estado = 2; // 2 significa "asignado"
+            console.log('Actualizando el estado a "asignado"');
+            console.log('Incidencia antes de guardar:', incidencia); // Log de incidencia antes de guardar
+
+            // Guardar la incidencia y verificar si el estado se actualiza
+            await incidencia.save({ transaction });
+            console.log('Incidencia después de guardar:', incidencia); // Log de incidencia después de guardar
+        } else {
+            console.log('El estado de la incidencia no es "registrado"'); // Log si el estado no es "registrado"
+        }
+
+        // Confirmar que la incidencia se guardó con el estado actualizado
+        const updatedIncidencia = await Incidencias.findOne({ where: { ct_cod_incidencia }, transaction });
+        console.log('Estado de la incidencia después de guardar:', updatedIncidencia.cn_id_estado); // Log del estado actualizado
+
+        // Asignar la incidencia
+        const asignacion = await Asignacion_incidencia.create({ ct_cod_incidencia, cn_user_id }, { transaction });
+        console.log('Asignación creada:', asignacion);
+
+        // Confirmar la transacción
+        await transaction.commit();
+        console.log('Transacción confirmada');
+
         res.json(asignacion);
     } catch (error) {
+        // Revertir la transacción en caso de error
+        await transaction.rollback();
         console.error('Error al asignar incidencia:', error);
         res.status(500).send('Error interno del servidor');
     }
-}
+};
+
+
+
+
+
 
 exports.asignar_roles_a_usuario = async (req, res) => {
     const { cn_id_usuario, roles } = req.body;
