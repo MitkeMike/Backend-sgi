@@ -19,7 +19,7 @@ const Bitacora_Cambios_Estados = sequelize.define('Bitacora_Cambios_Estados', {
         type: DataTypes.INTEGER,
         references: {
             model: 't_usuarios',
-            key: 'cn_id_usuario'
+            key: 'cn_user_id'
         },
         allowNull: false
     },

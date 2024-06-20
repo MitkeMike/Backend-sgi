@@ -9,7 +9,37 @@ const Prioridades = require('../models/Prioridades');
 const Asignacion_incidencia = require('../models/Asignacion_incidencia');
 const { Usuarios, Roles } = require('../models');
 const Roles_Usuario = require('../models/Roles_Usuario');
-const { Op } = require('sequelize');
+const { Op, QueryTypes } = require('sequelize');
+const sequelize = require('../database');
+
+
+exports.reporte_horas_trabajadas = async (req, res) => {
+    try {
+        const reporte = await sequelize.query(
+            `SELECT 
+            u.cn_user_id,
+            u.ct_nombre,
+            SUM(i.cn_tiempo_estimado_reparacion) AS total_horas_trabajadas
+         FROM 
+            t_usuarios u
+         JOIN 
+            t_asignacion_incidencia ai ON u.cn_user_id = ai.cn_user_id
+         JOIN 
+            t_incidencias i ON ai.ct_cod_incidencia = i.ct_cod_incidencia
+         GROUP BY 
+            u.cn_user_id, u.ct_nombre;`,
+            {
+                type: QueryTypes.SELECT
+            }
+        );
+
+        res.json(reporte);
+    } catch (error) {
+        console.error('Error al generar el reporte:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+};
+
 
 
 exports.obtener_todas_Afectaciones = async (req, res) => {
@@ -136,7 +166,7 @@ exports.obtener_todos_tecnicos = async (req, res) => {
                 model: Roles,
                 as: 'roles',
                 where: { ct_descripcion: 'Técnico' },
-                through: { attributes: [] } 
+                through: { attributes: [] }
             }
         });
 
@@ -205,14 +235,10 @@ exports.asignar_incidencia = async (req, res) => {
 };
 
 
-
-
-
-
 exports.asignar_roles_a_usuario = async (req, res) => {
     const { cn_id_usuario, roles } = req.body;
     console.log('Datos recibidos:', req.body);
-    if(!cn_id_usuario || !roles || !Array.isArray(roles) || roles.length === 0){
+    if (!cn_id_usuario || !roles || !Array.isArray(roles) || roles.length === 0) {
         return res.status(400).send({ message: 'Usuario o roles no proporcionados o formato incorrecto.' });
     }
 
@@ -240,7 +266,7 @@ exports.asignar_roles_a_usuario = async (req, res) => {
             await Roles_Usuario.bulkCreate(rolesToInsert);
         }
 
-        res.status(200).json({message: 'Roles asignados correctamente.'});
+        res.status(200).json({ message: 'Roles asignados correctamente.' });
 
     } catch (error) {
         console.error('Error al asignar roles al usuario:', error);

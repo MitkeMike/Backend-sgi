@@ -4,9 +4,19 @@ const Asignacion_incidencias = require('../models/Asignacion_incidencia');
 const multer = require('multer');
 const sequelize = require('../database');
 const { Op } = require('sequelize');
+const { registrar_bitacora } = require('./bitacora_helper');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage }).single('img');
+
+const estadosValidos = [
+    { id: 1, descripcion: 'Registrado' },
+    { id: 2, descripcion: 'Asignado' },
+    { id: 3, descripcion: 'En Revisión' },
+    { id: 4, descripcion: 'En Reparación' },
+    { id: 6, descripcion: 'Terminado' },
+    { id: 7, descripcion: 'Aprobado' }
+];
 
 exports.obtener_todas_Incidencias = async (req, res) => {
     try {
@@ -66,6 +76,10 @@ exports.crear_Incidencia = async (req, res) => {
                 // Creamos la incidencia
                 const nuevaIncidencia = await Incidencias.create(incidencia, { transaction: t });
 
+                // Registrar en la bitácora
+                const referencia = `Numero de incidencia=${nuevaIncidencia.ct_cod_incidencia}, afectacion=${incidencia.cn_id_afectacion}, prioridad=${incidencia.cn_id_prioridad}, riesgo=${incidencia.cn_id_riesgo}`;
+                await registrar_bitacora(incidencia.cn_id_estado, incidencia.cn_user_id, referencia, t);
+
                 // Confirmamos la transacción
                 await t.commit();
 
@@ -83,9 +97,8 @@ exports.crear_Incidencia = async (req, res) => {
     });
 };
 
-
 exports.actualizar_Incidencia = async (req, res) => {
-    const { ct_cod_incidencia, cn_user_id, afectacion, categoria, estado, riesgo, prioridad } = req.body;
+    const { ct_cod_incidencia, cn_user_id, afectacion, categoria, estado, riesgo, prioridad, tiempo_estimado_reparacion } = req.body;
 
     try {
         const t = await sequelize.transaction();
@@ -110,7 +123,8 @@ exports.actualizar_Incidencia = async (req, res) => {
                 cn_id_categoria: categoria,
                 cn_id_estado: incidencia.cn_id_estado, // Usar el estado actualizado
                 cn_id_riesgo: riesgo,
-                cn_id_prioridad: prioridad
+                cn_id_prioridad: prioridad,
+                cn_tiempo_estimado_reparacion: tiempo_estimado_reparacion
             }, {
                 where: { ct_cod_incidencia: ct_cod_incidencia },
                 transaction: t
@@ -125,6 +139,10 @@ exports.actualizar_Incidencia = async (req, res) => {
                 ct_cod_incidencia: ct_cod_incidencia,
                 cn_user_id: cn_user_id
             }, { transaction: t });
+
+            // Registrar en la bitácora
+            const referencia = `Numero de incidencia=${ct_cod_incidencia}, codigo tecnico=${cn_user_id}`;
+            await registrar_bitacora(incidencia.cn_id_estado, cn_user_id, referencia, t);
 
             // Confirmamos la transacción
             await t.commit();
@@ -177,14 +195,7 @@ exports.buscar_incidencia = async (req, res) => {
     }
 }
 
-const estadosValidos = [
-    { id: 1, descripcion: 'Registrado' },
-    { id: 2, descripcion: 'Asignado' },
-    { id: 3, descripcion: 'En Revisión' },
-    { id: 4, descripcion: 'En Reparación' },
-    { id: 6, descripcion: 'Terminado' },
-    { id: 7, descripcion: 'Aprobado' }
-];
+
 
 exports.obtener_estado_incidencia = async (req, res) => {
     try {

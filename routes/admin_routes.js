@@ -19,4 +19,6 @@ router.post('/eliminar-roles/',auth,adminController.eliminar_roles_de_usuario);
 router.get('/tecnicos', auth, adminController.obtener_todos_tecnicos);
 router.get('/usuario-roles/:cn_id_usuario', auth, adminController.roles_por_usuario);
 
+router.get('/reporte-horas-trabajadas', auth, adminController.reporte_horas_trabajadas);
+
 module.exports = router;

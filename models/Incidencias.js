@@ -1,8 +1,8 @@
 const { DataTypes } = require('sequelize');
-const  sequelize  = require('../database');
+const sequelize = require('../database');
 const Imagenes = require('./Imagenes');
 
-const Incidencias = sequelize.define('Incidencias',{
+const Incidencias = sequelize.define('Incidencias', {
     ct_cod_incidencia: {
         type: DataTypes.STRING,
         primaryKey: true
@@ -41,7 +41,6 @@ const Incidencias = sequelize.define('Incidencias',{
     },
     cn_numero_incidente: {
         type: DataTypes.INTEGER,
-        Autoincrement: true,
         allowNull: true
     },
     cn_id_estado: {
@@ -94,7 +93,7 @@ const Incidencias = sequelize.define('Incidencias',{
         }
     }
 }, {
-    tableName: 't_incidencias',
+    tableName: 't_incidencias', // Asegúrate de que el nombre de la tabla es correcto
     timestamps: false,
     hooks: {
         beforeCreate: async (incidencia) => {

@@ -2,7 +2,7 @@ const Diagnosticos = require('../models/Diagnosticos');
 const Imagenes = require('../models/Imagenes');
 const multer = require('multer');
 const sequelize = require('../database');
-
+const {registrar_bitacora} = require('./bitacora_helper');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage }).single('img');
 
@@ -81,12 +81,16 @@ exports.crear_Diagnostico = async (req, res) => {
                     console.log('Imagen guardada en la base de datos:', nuevaImagen);
                 }
                 if (nuevaImagen) {
-                    //Pasamos el id de la imagen al nuevo dianostico
+                    //Pasamos el id de la imagen al nuevo diagnóstico
                     diagnostico.cn_id_img_diagnostico = nuevaImagen.cn_id_img;
                 }
 
                 const nuevoDiagnostico = await Diagnosticos.create(diagnostico, { transaction: t });
                 console.log('Diagnostico creado:', nuevoDiagnostico);
+
+                // Registrar en la bitácora
+                const referencia = `Numero de incidencia=${diagnostico.ct_cod_incidencia}, Tiempo de solucion estimado=${diagnostico.tiempo_estimado}`;
+                await registrar_bitacora(3, diagnostico.cn_user_id, referencia, t);
 
                 await t.commit();
                 res.json(nuevoDiagnostico);
@@ -100,5 +104,4 @@ exports.crear_Diagnostico = async (req, res) => {
             res.status(500).send('Error interno del servidor');
         }
     });
-}
-
+};

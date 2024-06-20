@@ -10,7 +10,7 @@ const Asignacion_incidencia = sequelize.define('Asignacion_incidencia', {
     ct_cod_incidencia: {
         type: DataTypes.STRING,
         references: {
-            model: 't_incidencias',
+            model: 't_incidencias', // Debe coincidir con el nombre de la tabla en la base de datos
             key: 'ct_cod_incidencia'
         },
         allowNull: false
@@ -18,14 +18,14 @@ const Asignacion_incidencia = sequelize.define('Asignacion_incidencia', {
     cn_user_id: {
         type: DataTypes.INTEGER,
         references: {
-            model: 't_usuarios',
+            model: 't_usuarios', // Debe coincidir con el nombre de la tabla en la base de datos
             key: 'cn_user_id'
         },
         allowNull: false
-    },
-    }, {
-        timestamps: false,
-        tableName: 't_asignacion_incidencia'
-    })
+    }
+}, {
+    timestamps: false,
+    tableName: 't_asignacion_incidencia'
+});
 
-    module.exports = Asignacion_incidencia;
+module.exports = Asignacion_incidencia;
