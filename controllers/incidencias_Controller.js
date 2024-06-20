@@ -1,13 +1,18 @@
 const Incidencias = require('../models/Incidencias');
 const Imagenes = require('../models/Imagenes');
 const Asignacion_incidencias = require('../models/Asignacion_incidencia');
-const multer = require('multer');
-const sequelize = require('../database');
-const { Op } = require('sequelize');
+const Usuarios = require('../models/Usuarios');
+
+const sendMail = require('../helpers/mailer');
 const { registrar_bitacora } = require('./bitacora_helper');
 
+const sequelize = require('../database');
+const { Op } = require('sequelize');
+
+const multer = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage }).single('img');
+
 
 const estadosValidos = [
     { id: 1, descripcion: 'Registrado' },
@@ -83,6 +88,14 @@ exports.crear_Incidencia = async (req, res) => {
                 // Confirmamos la transacción
                 await t.commit();
 
+                // Obtener el correo del usuario
+                const usuario = await Usuarios.findOne({ where: { cn_user_id: incidencia.cn_user_id } });
+
+                if (usuario) {
+                    // Enviar correo
+                    sendMail(usuario.ct_correo, 'Nueva Incidencia Registrada', `Se ha registrado una nueva incidencia con el código ${nuevaIncidencia.ct_cod_incidencia}`);
+                }
+
                 res.json(nuevaIncidencia);
             } catch (error) {
                 // Se revierte la transacción
@@ -97,6 +110,7 @@ exports.crear_Incidencia = async (req, res) => {
     });
 };
 
+//Asignar Incidencia
 exports.actualizar_Incidencia = async (req, res) => {
     const { ct_cod_incidencia, cn_user_id, afectacion, categoria, estado, riesgo, prioridad, tiempo_estimado_reparacion } = req.body;
 
@@ -139,6 +153,17 @@ exports.actualizar_Incidencia = async (req, res) => {
                 ct_cod_incidencia: ct_cod_incidencia,
                 cn_user_id: cn_user_id
             }, { transaction: t });
+
+            // Obtener el correo del usuario asignado
+            const usuarioAsignado = await Usuarios.findOne({ where: { cn_user_id: cn_user_id }, transaction: t });
+            if (!usuarioAsignado || !usuarioAsignado.ct_correo) {
+                throw new Error('No se encontró el usuario o su correo');
+            }
+
+            // Enviar correo al usuario asignado
+            const asunto = 'Nueva Incidencia Asignada';
+            const mensaje = `Se le ha asignado una nueva incidencia con el código ${ct_cod_incidencia}. Por favor, revise el sistema para más detalles.`;
+            await sendMail(usuarioAsignado.ct_correo, asunto, mensaje);
 
             // Registrar en la bitácora
             const referencia = `Numero de incidencia=${ct_cod_incidencia}, codigo tecnico=${cn_user_id}`;
@@ -227,10 +252,10 @@ exports.obtener_estado_incidencia = async (req, res) => {
     }
 };
 
-
+//Actualizar estado de la incidencia.
 exports.cambiar_estado_incidencia = async (req, res) => {
     try {
-        const { ct_cod_incidencia, nuevo_estado } = req.body;
+        const { ct_cod_incidencia, nuevo_estado, cn_user_id } = req.body; 
 
         // Buscar el nuevo estado en la lista de estados válidos
         const estadoValido = estadosValidos.find(estado => estado.descripcion === nuevo_estado);
@@ -249,6 +274,17 @@ exports.cambiar_estado_incidencia = async (req, res) => {
         // Actualizar el estado de la incidencia
         incidencia.cn_id_estado = estadoValido.id;
         await incidencia.save();
+
+        // Obtener el correo del usuario que cambia el estado
+        const usuario = await Usuarios.findOne({ where: { cn_user_id: cn_user_id } });
+        if (!usuario || !usuario.ct_correo) {
+            throw new Error('No se encontró el usuario o su correo');
+        }
+
+        // Enviar correo al usuario que cambia el estado
+        const asunto = 'Estado de Incidencia Actualizado';
+        const mensaje = `Ha cambiado el estado de la incidencia con el código ${ct_cod_incidencia} al estado ${nuevo_estado}.`;
+        await sendMail(usuario.ct_correo, asunto, mensaje);
 
         res.json({ message: 'Estado de la incidencia actualizado exitosamente', incidencia });
     } catch (error) {
