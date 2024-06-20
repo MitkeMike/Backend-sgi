@@ -1,5 +1,5 @@
 const express = require('express');
-const cors = require('cors'); // Importa cors
+const cors = require('cors'); 
 require('dotenv').config();
 const auth_routes = require('./routes/auth_routes'); 
 const usuarioRoutes = require('./routes/usuarioRoutes'); 
@@ -8,25 +8,35 @@ const diagnosticosRoutes = require('./routes/diagnosticos_routes');
 const admin_routes = require('./routes/admin_routes');
 const sequelize = require('./database');
 
+
+const Roles = require('./models/Roles');
+const Pantallas = require('./models/Pantallas');
+
+
 const app = express();
 const port = process.env.PORT;
 
-// Usa cors para permitir solicitudes de cualquier origen
-app.use(cors({
-    origin: '*'
-}));
+app.use(cors({ origin: '*' }));
+app.use(express.json());
+
+// Define la función de sincronización de la base de datos
+const syncDatabase = async () => {
+    try {
+        // Sincroniza todos los modelos en el orden correcto
+        await sequelize.sync({ alter: true });
+        console.log("Database synchronized successfully.");
+    } catch (error) {
+        console.error("Database sync failed:", error);
+    }
+};
+
+// Llama a la función de sincronización de la base de datos
+syncDatabase();
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
 
-app.use(express.json());
-
-sequelize.sync({ force: false }).then(() => {
-    console.log('Database sync');
-}).catch(error => {
-    console.error('Database sync failed:', error);
-});
 app.use('/auth', auth_routes);
 app.use('/admin', admin_routes);
 app.use('/usuarios', usuarioRoutes);
