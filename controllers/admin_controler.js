@@ -12,7 +12,11 @@ const Roles_Usuario = require('../models/Roles_Usuario');
 const { Op, QueryTypes } = require('sequelize');
 const sequelize = require('../database');
 
-
+/**
+ * Genera un reporte de horas trabajadas por usuario.
+ * @param {Object} req - La solicitud HTTP.
+ * @param {Object} res - La respuesta HTTP.
+ */
 exports.reporte_horas_trabajadas = async (req, res) => {
     try {
         const reporte = await sequelize.query(
@@ -40,8 +44,11 @@ exports.reporte_horas_trabajadas = async (req, res) => {
     }
 };
 
-
-
+/**
+ * Obtiene todas las afectaciones.
+ * @param {Object} req - La solicitud HTTP.
+ * @param {Object} res - La respuesta HTTP.
+ */
 exports.obtener_todas_Afectaciones = async (req, res) => {
     try {
         const afectaciones = await Afectaciones.findAll();
@@ -53,8 +60,13 @@ exports.obtener_todas_Afectaciones = async (req, res) => {
         console.error('Error al obtener afectaciones:', error);
         res.status(500).send('Error interno del servidor');
     }
-}
+};
 
+/**
+ * Obtiene todas las categorías.
+ * @param {Object} req - La solicitud HTTP.
+ * @param {Object} res - La respuesta HTTP.
+ */
 exports.obtener_todas_categorias = async (req, res) => {
     try {
         const categorias = await Categorias.findAll();
@@ -66,8 +78,13 @@ exports.obtener_todas_categorias = async (req, res) => {
         console.error('Error al obtener categorias:', error);
         res.status(500).send('Error interno del servidor');
     }
-}
+};
 
+/**
+ * Obtiene todos los departamentos.
+ * @param {Object} req - La solicitud HTTP.
+ * @param {Object} res - La respuesta HTTP.
+ */
 exports.obtener_todos_departamentos = async (req, res) => {
     try {
         const departamentos = await Departamento.findAll();
@@ -79,8 +96,13 @@ exports.obtener_todos_departamentos = async (req, res) => {
         console.error('Error al obtener departamentos:', error);
         res.status(500).send('Error interno del servidor');
     }
-}
+};
 
+/**
+ * Obtiene todos los estados.
+ * @param {Object} req - La solicitud HTTP.
+ * @param {Object} res - La respuesta HTTP.
+ */
 exports.obtener_todos_estados = async (req, res) => {
     try {
         const estados = await Estados.findAll();
@@ -92,8 +114,13 @@ exports.obtener_todos_estados = async (req, res) => {
         console.error('Error al obtener estados:', error);
         res.status(500).send('Error interno del servidor');
     }
-}
+};
 
+/**
+ * Obtiene todas las pantallas.
+ * @param {Object} req - La solicitud HTTP.
+ * @param {Object} res - La respuesta HTTP.
+ */
 exports.obtener_todas_pantallas = async (req, res) => {
     try {
         const pantallas = await Pantallas.findAll();
@@ -105,8 +132,13 @@ exports.obtener_todas_pantallas = async (req, res) => {
         console.error('Error al obtener pantallas:', error);
         res.status(500).send('Error interno del servidor');
     }
-}
+};
 
+/**
+ * Obtiene todos los riesgos.
+ * @param {Object} req - La solicitud HTTP.
+ * @param {Object} res - La respuesta HTTP.
+ */
 exports.obtener_todos_riesgos = async (req, res) => {
     try {
         const riesgos = await Riesgos.findAll();
@@ -118,8 +150,13 @@ exports.obtener_todos_riesgos = async (req, res) => {
         console.error('Error al obtener riesgos:', error);
         res.status(500).send('Error interno del servidor');
     }
-}
+};
 
+/**
+ * Obtiene todos los roles.
+ * @param {Object} req - La solicitud HTTP.
+ * @param {Object} res - La respuesta HTTP.
+ */
 exports.obtener_todos_roles = async (req, res) => {
     try {
         const roles = await Roles.findAll();
@@ -131,8 +168,13 @@ exports.obtener_todos_roles = async (req, res) => {
         console.error('Error al obtener roles:', error);
         res.status(500).send('Error interno del servidor');
     }
-}
+};
 
+/**
+ * Obtiene todos los sistemas.
+ * @param {Object} req - La solicitud HTTP.
+ * @param {Object} res - La respuesta HTTP.
+ */
 exports.obtener_todos_sistemas = async (req, res) => {
     try {
         const sistemas = await Sistema.findAll();
@@ -144,8 +186,13 @@ exports.obtener_todos_sistemas = async (req, res) => {
         console.error('Error al obtener sistemas:', error);
         res.status(500).send('Error interno del servidor');
     }
-}
+};
 
+/**
+ * Obtiene todas las prioridades.
+ * @param {Object} req - La solicitud HTTP.
+ * @param {Object} res - La respuesta HTTP.
+ */
 exports.obtener_todas_prioridades = async (req, res) => {
     try {
         const prioridades = await Prioridades.findAll();
@@ -157,8 +204,13 @@ exports.obtener_todas_prioridades = async (req, res) => {
         console.error('Error al obtener prioridades:', error);
         res.status(500).send('Error interno del servidor');
     }
-}
+};
 
+/**
+ * Obtiene todos los técnicos.
+ * @param {Object} req - La solicitud HTTP.
+ * @param {Object} res - La respuesta HTTP.
+ */
 exports.obtener_todos_tecnicos = async (req, res) => {
     try {
         const tecnicos = await Usuarios.findAll({
@@ -180,6 +232,11 @@ exports.obtener_todos_tecnicos = async (req, res) => {
     }
 };
 
+/**
+ * Asigna una incidencia a un usuario.
+ * @param {Object} req - La solicitud HTTP.
+ * @param {Object} res - La respuesta HTTP.
+ */
 exports.asignar_incidencia = async (req, res) => {
     const transaction = await sequelize.transaction();
     try {
@@ -234,7 +291,11 @@ exports.asignar_incidencia = async (req, res) => {
     }
 };
 
-
+/**
+ * Asigna roles a un usuario.
+ * @param {Object} req - La solicitud HTTP.
+ * @param {Object} res - La respuesta HTTP.
+ */
 exports.asignar_roles_a_usuario = async (req, res) => {
     const { cn_id_usuario, roles } = req.body;
     console.log('Datos recibidos:', req.body);
@@ -274,6 +335,11 @@ exports.asignar_roles_a_usuario = async (req, res) => {
     }
 };
 
+/**
+ * Elimina roles de un usuario.
+ * @param {Object} req - La solicitud HTTP.
+ * @param {Object} res - La respuesta HTTP.
+ */
 exports.eliminar_roles_de_usuario = async (req, res) => {
     const { cn_id_usuario, cn_id_roles } = req.body;
 
@@ -300,6 +366,11 @@ exports.eliminar_roles_de_usuario = async (req, res) => {
     }
 };
 
+/**
+ * Obtiene los roles de un usuario específico.
+ * @param {Object} req - La solicitud HTTP.
+ * @param {Object} res - La respuesta HTTP.
+ */
 exports.roles_por_usuario = async (req, res) => {
     const cn_id_usuario = req.params.cn_id_usuario;
     console.log(cn_id_usuario);
@@ -326,5 +397,4 @@ exports.roles_por_usuario = async (req, res) => {
         console.error('Error al obtener roles por usuario:', error);
         res.status(500).json({ message: 'Error interno del servidor.' });
     }
-}
-
+};

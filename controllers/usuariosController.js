@@ -4,9 +4,14 @@ const jwt = require('jsonwebtoken');
 const sequelize = require('../database');
 const { Op } = require('sequelize');
 
+/**
+ * Obtener el usuario autenticado basado en el token de autorización.
+ * @param {Object} req - Objeto de solicitud.
+ * @param {Object} res - Objeto de respuesta.
+ */
 exports.obtener_usuario = async (req, res) => {
     try {
-        // Extraer el token 
+        // Extraer el token de la cabecera de autorización
         const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
         if (!token) {
             return res.status(401).json({ error: 'Token de autorización no proporcionado' });
@@ -28,8 +33,13 @@ exports.obtener_usuario = async (req, res) => {
         console.error('Error al obtener usuario:', error);
         res.status(500).send('Error interno del servidor');
     }
-}
+};
 
+/**
+ * Buscar usuarios en la base de datos basado en nombre, cédula o correo.
+ * @param {Object} req - Objeto de solicitud.
+ * @param {Object} res - Objeto de respuesta.
+ */
 exports.buscar_usuario = async (req, res) => {
     const { ct_nombre, ct_cedula, ct_correo } = req.body;
     try {
@@ -59,6 +69,11 @@ exports.buscar_usuario = async (req, res) => {
     }
 };
 
+/**
+ * Obtener todos los usuarios de la base de datos.
+ * @param {Object} req - Objeto de solicitud.
+ * @param {Object} res - Objeto de respuesta.
+ */
 exports.obtener_usuarios = async (req, res) => {
     try {
         const usuarios = await Usuario.findAll();
@@ -69,6 +84,11 @@ exports.obtener_usuarios = async (req, res) => {
     }
 };
 
+/**
+ * Crear un nuevo usuario en la base de datos.
+ * @param {Object} req - Objeto de solicitud.
+ * @param {Object} res - Objeto de respuesta.
+ */
 exports.crear_usuario = async (req, res) => {
     try {
         const { ct_correo } = req.body;
@@ -88,7 +108,11 @@ exports.crear_usuario = async (req, res) => {
     }
 };
 
-
+/**
+ * Actualizar un usuario existente en la base de datos.
+ * @param {Object} req - Objeto de solicitud.
+ * @param {Object} res - Objeto de respuesta.
+ */
 exports.actualizar_usuario = async (req, res) => {
     try {
         const usuario = await Usuario.findByPk(req.params.id);
@@ -107,6 +131,11 @@ exports.actualizar_usuario = async (req, res) => {
     }
 };
 
+/**
+ * Eliminar un usuario de la base de datos.
+ * @param {Object} req - Objeto de solicitud.
+ * @param {Object} res - Objeto de respuesta.
+ */
 exports.eliminar_Usuario = async (req, res) => {
     try {
         const usuario = await Usuario.findByPk(req.params.id);
@@ -121,4 +150,3 @@ exports.eliminar_Usuario = async (req, res) => {
         res.status(500).send('Error interno del servidor');
     }
 };
-

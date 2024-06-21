@@ -13,16 +13,21 @@ const multer = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage }).single('img');
 
-
 const estadosValidos = [
     { id: 1, descripcion: 'Registrado' },
     { id: 2, descripcion: 'Asignado' },
     { id: 3, descripcion: 'En Revisión' },
     { id: 4, descripcion: 'En Reparación' },
     { id: 6, descripcion: 'Terminado' },
-    { id: 7, descripcion: 'Aprobado' }
+    { id: 7, descripcion: 'Aprobado' },
+    { id: 9, descripcion: 'Cerrado'}
 ];
 
+/**
+ * Obtener todas las incidencias.
+ * @param {Object} req - Objeto de solicitud.
+ * @param {Object} res - Objeto de respuesta.
+ */
 exports.obtener_todas_Incidencias = async (req, res) => {
     try {
         const incidencias = await Incidencias.findAll({
@@ -46,6 +51,11 @@ exports.obtener_todas_Incidencias = async (req, res) => {
     }
 };
 
+/**
+ * Crear una nueva incidencia.
+ * @param {Object} req - Objeto de solicitud.
+ * @param {Object} res - Objeto de respuesta.
+ */
 exports.crear_Incidencia = async (req, res) => {
     upload(req, res, async (err) => {
         if (err) {
@@ -110,7 +120,11 @@ exports.crear_Incidencia = async (req, res) => {
     });
 };
 
-//Asignar Incidencia
+/**
+ * Actualizar una incidencia existente.
+ * @param {Object} req - Objeto de solicitud.
+ * @param {Object} res - Objeto de respuesta.
+ */
 exports.actualizar_Incidencia = async (req, res) => {
     const { ct_cod_incidencia, cn_user_id, afectacion, categoria, estado, riesgo, prioridad, tiempo_estimado_reparacion } = req.body;
 
@@ -185,6 +199,11 @@ exports.actualizar_Incidencia = async (req, res) => {
     }
 };
 
+/**
+ * Buscar incidencias por código o título.
+ * @param {Object} req - Objeto de solicitud.
+ * @param {Object} res - Objeto de respuesta.
+ */
 exports.buscar_incidencia = async (req, res) => {
     const { ct_cod_incidencia, ct_titulo_incidencia } = req.body;
 
@@ -218,10 +237,13 @@ exports.buscar_incidencia = async (req, res) => {
         console.error('Error al buscar incidencias:', error);
         res.status(500).send('Error interno del servidor');
     }
-}
+};
 
-
-
+/**
+ * Obtener el estado actual y siguiente de una incidencia.
+ * @param {Object} req - Objeto de solicitud.
+ * @param {Object} res - Objeto de respuesta.
+ */
 exports.obtener_estado_incidencia = async (req, res) => {
     try {
         const ct_cod_incidencia = req.params.ct_cod_incidencia;
@@ -252,42 +274,58 @@ exports.obtener_estado_incidencia = async (req, res) => {
     }
 };
 
-//Actualizar estado de la incidencia.
+/**
+ * Cambiar el estado de una incidencia.
+ * @param {Object} req - Objeto de solicitud.
+ * @param {Object} res - Objeto de respuesta.
+ */
 exports.cambiar_estado_incidencia = async (req, res) => {
+    const t = await sequelize.transaction();
+
     try {
-        const { ct_cod_incidencia, nuevo_estado, cn_user_id } = req.body; 
+        const { ct_cod_incidencia, nuevo_estado, cn_user_id } = req.body;
 
         // Buscar el nuevo estado en la lista de estados válidos
         const estadoValido = estadosValidos.find(estado => estado.descripcion === nuevo_estado);
 
         if (!estadoValido) {
+            await t.rollback();
             return res.status(400).send('Estado inválido');
         }
 
         // Obtener la incidencia
-        const incidencia = await Incidencias.findOne({ where: { ct_cod_incidencia } });
+        const incidencia = await Incidencias.findOne({ where: { ct_cod_incidencia }, transaction: t });
 
         if (!incidencia) {
+            await t.rollback();
             return res.status(404).send('Incidencia no encontrada');
         }
 
         // Actualizar el estado de la incidencia
         incidencia.cn_id_estado = estadoValido.id;
-        await incidencia.save();
+        await incidencia.save({ transaction: t });
 
         // Obtener el correo del usuario que cambia el estado
-        const usuario = await Usuarios.findOne({ where: { cn_user_id: cn_user_id } });
+        const usuario = await Usuarios.findOne({ where: { cn_user_id }, transaction: t });
         if (!usuario || !usuario.ct_correo) {
+            await t.rollback();
             throw new Error('No se encontró el usuario o su correo');
         }
+
+        // Registrar en bitácora el cambio de estado
+        const referencia = `Numero de incidencia=${ct_cod_incidencia}, estado=${nuevo_estado}, codigo tecnico=${cn_user_id}`;
+        await registrar_bitacora(incidencia.cn_id_estado, cn_user_id, referencia, t);
 
         // Enviar correo al usuario que cambia el estado
         const asunto = 'Estado de Incidencia Actualizado';
         const mensaje = `Ha cambiado el estado de la incidencia con el código ${ct_cod_incidencia} al estado ${nuevo_estado}.`;
         await sendMail(usuario.ct_correo, asunto, mensaje);
 
+        await t.commit();
+
         res.json({ message: 'Estado de la incidencia actualizado exitosamente', incidencia });
     } catch (error) {
+        await t.rollback();
         console.error('Error al cambiar el estado de la incidencia:', error);
         res.status(500).send('Error interno del servidor');
     }
