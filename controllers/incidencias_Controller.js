@@ -92,7 +92,7 @@ exports.crear_Incidencia = async (req, res) => {
                 const nuevaIncidencia = await Incidencias.create(incidencia, { transaction: t });
 
                 // Registrar en la bitácora
-                const referencia = `Numero de incidencia=${nuevaIncidencia.ct_cod_incidencia}, afectacion=${incidencia.cn_id_afectacion}, prioridad=${incidencia.cn_id_prioridad}, riesgo=${incidencia.cn_id_riesgo}`;
+                const referencia = `Numero de incidencia=${nuevaIncidencia.ct_cod_incidencia}, Usuario= ${incidencia.cn_user_id}`;
                 await registrar_bitacora(incidencia.cn_id_estado, incidencia.cn_user_id, referencia, t);
 
                 // Confirmamos la transacción
@@ -180,7 +180,7 @@ exports.actualizar_Incidencia = async (req, res) => {
             await sendMail(usuarioAsignado.ct_correo, asunto, mensaje);
 
             // Registrar en la bitácora
-            const referencia = `Numero de incidencia=${ct_cod_incidencia}, codigo tecnico=${cn_user_id}`;
+            const referencia = `Numero de incidencia=${ct_cod_incidencia}, codigo tecnico=${cn_user_id}, afectacion=${afectacion}, categoria=${categoria}, estado=${estado}, riesgo=${riesgo}, prioridad=${prioridad}, tiempo estimado de reparacion=${tiempo_estimado_reparacion}`;
             await registrar_bitacora(incidencia.cn_id_estado, cn_user_id, referencia, t);
 
             // Confirmamos la transacción
